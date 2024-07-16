@@ -1,7 +1,9 @@
 import express from "express";
-const app = express();
 import calculateBmi from "./bmicalculator";
+import calculateExercise, { ArgInterface } from "./excerciseCalculator";
 
+const app = express();
+app.use(express.json());
 app.get("/hello", (_req, res) => {
   res.send("Hello Full Stack");
 });
@@ -24,6 +26,18 @@ app.get("/bmi", (req, res) => {
     height: h,
     bmi: result,
   });
+});
+app.post("/excersises", (req, res) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const body: ArgInterface = req.body as ArgInterface;
+  if (!body)
+    return res.json({
+      error: "invalid format",
+    });
+  if (!body.daily_exercises || !body.target)
+    return res.json({ error: "parameter missing" });
+  const result = calculateExercise(body);
+  return res.json(result);
 });
 
 const PORT = 3003;

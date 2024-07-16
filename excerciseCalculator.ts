@@ -1,6 +1,6 @@
-interface ArgInterface {
+export interface ArgInterface {
   target: number;
-  days: number[];
+  daily_exercises: number[];
 }
 interface ExCalculator {
   periodLength: number;
@@ -21,7 +21,7 @@ const parseArguments = (args: string[]): ArgInterface => {
     throw new Error(
       "To run this script input 2 or more args: first arg is the target exercise per day, every arg is hours of excercise done for each day of the training program"
     );
-  let array = [];
+  const array = [];
   for (let i = 2; i < args.length; i++) {
     if (isNaN(Number(args[i])))
       throw new Error("all arguments must be numbers");
@@ -29,13 +29,15 @@ const parseArguments = (args: string[]): ArgInterface => {
   }
   return {
     target: Number(args[2]),
-    days: array,
+    daily_exercises: array,
   };
 };
 
 const calculateExercise = (data: ArgInterface): ExCalculator => {
-  const { target, days } = data;
-  const average = days.reduce((acc, curr) => acc + curr, 0) / days.length;
+  const { target, daily_exercises } = data;
+  const average =
+    daily_exercises.reduce((acc, curr) => acc + curr, 0) /
+    daily_exercises.length;
   const result = (target: number, average: number): boolean =>
     average >= target;
   const success = result(target, average);
@@ -53,8 +55,11 @@ const calculateExercise = (data: ArgInterface): ExCalculator => {
   }
 
   return {
-    periodLength: days.length,
-    trainingDays: days.reduce((acc, curr) => (curr !== 0 ? acc + 1 : acc), 0),
+    periodLength: daily_exercises.length,
+    trainingDays: daily_exercises.reduce(
+      (acc, curr) => (curr !== 0 ? acc + 1 : acc),
+      0
+    ),
     success: success,
     rating: rating,
     ratingDescription: comment,
@@ -74,4 +79,5 @@ try {
     console.log(errorMessage);
   }
 }
+
 export default calculateExercise;
