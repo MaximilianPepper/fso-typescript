@@ -21,7 +21,7 @@ const calculateBmi = (height: number, weight: number): string => {
   const score = weight / Math.pow(height / 100, 2);
   if (score < 18.5) return "Underweight";
   else if (score > 25) return "Overweight";
-  else return "Normal (healthy weight)";
+  else return "Normal weight";
 };
 
 try {
