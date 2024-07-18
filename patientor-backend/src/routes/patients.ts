@@ -29,4 +29,9 @@ router.post("/", (_req, res) => {
   res.send("Saving a diary!");
 });
 
+router.get("/:id", (req, res) => {
+  const id = req.params.id;
+  const data = patientService.findPatientById(id);
+  res.send(data);
+});
 export default router;

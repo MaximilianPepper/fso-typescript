@@ -1,12 +1,17 @@
 import diagnosesData from "../data/diagnoses";
 import patientData from "../data/patients";
-import { Diagnoses, Patient, Patients, PatientWithoutId } from "../types";
+import {
+  Diagnoses,
+  Patient,
+  NonSensitivePatient,
+  PatientWithoutId,
+} from "../types";
 import { v1 as uuid } from "uuid";
 const getDiagnoses = (): Diagnoses[] => {
   return diagnosesData;
 };
 
-const getPatients = (): Patients[] => {
+const getPatients = (): NonSensitivePatient[] => {
   return patientData;
 };
 const addDiary = () => {
@@ -20,9 +25,15 @@ const addNewPatient = (patient: PatientWithoutId): Patient => {
   return newPatient;
 };
 
+const findPatientById = (id: string) => {
+  const patient = patientData.find((e) => e.id === id);
+  return patient;
+};
+
 export default {
   getDiagnoses,
   addDiary,
   getPatients,
   addNewPatient,
+  findPatientById,
 };
