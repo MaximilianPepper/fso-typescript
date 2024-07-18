@@ -9,6 +9,7 @@ function App() {
   const [visibility, setVisibility] = useState("");
   const [weather, setWeather] = useState("");
   const [comment, setComment] = useState("");
+  const [error, setError] = useState("");
   useEffect(() => {
     axios
       .get<DiaryEntry[]>("http://localhost:3000/api/diaries")
@@ -33,12 +34,18 @@ function App() {
       setWeather("");
       setComment("");
     } catch (e: unknown) {
-      console.log(e);
+      if (axios.isAxiosError(e)) {
+        setError(e.response?.data);
+        setTimeout(() => setError(""), 5000);
+      } else {
+        console.error("Unknown error: ", e);
+      }
     }
   };
   return (
     <div>
       <h2>Add new Entry</h2>
+      {error && <div style={{ color: "red" }}>{error}</div>}
       <form onSubmit={addEntry}>
         date
         <input
