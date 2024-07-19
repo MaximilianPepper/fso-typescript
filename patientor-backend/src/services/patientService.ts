@@ -5,6 +5,7 @@ import {
   Patient,
   NonSensitivePatient,
   PatientWithoutId,
+  EntryWithoutId,
 } from "../types";
 import { v1 as uuid } from "uuid";
 const getDiagnoses = (): Diagnoses[] => {
@@ -30,10 +31,25 @@ const findPatientById = (id: string) => {
   return patient;
 };
 
+// change any to entry union type OMIT ID
+const addNewEntry = (id: string, newEntry: EntryWithoutId): Patient => {
+  const eId = uuid();
+  const entry = { ...newEntry, id: eId };
+
+  const patient = patientData.find((p) => p.id === id);
+
+  if (!patient) {
+    throw new Error(`Patient with id ${id} not found`);
+  }
+  patient.entries.push(entry);
+  return patient;
+};
+
 export default {
   getDiagnoses,
   addDiary,
   getPatients,
   addNewPatient,
   findPatientById,
+  addNewEntry,
 };
