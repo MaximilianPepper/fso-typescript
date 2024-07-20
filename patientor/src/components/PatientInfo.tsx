@@ -1,15 +1,23 @@
 import { useParams } from "react-router-dom";
 import patientService from "../services/patients";
-import { Diagnosis, Patient, Gender, Entry } from "../types";
+import { Diagnosis, Patient, Gender, Entry, EntryWithoutId } from "../types";
 import { useEffect, useState } from "react";
 import DiagnosisInfo from "./DiagnosisInfo";
 import FemaleIcon from "@mui/icons-material/Female";
 import MaleIcon from "@mui/icons-material/Male";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
-const PatientInfo = () => {
+import EntryForm from "./EntryForm";
+import { Alert } from "@mui/material";
+interface PatientInfoProps {
+  addEntry(id: string, entry: EntryWithoutId): void;
+  patients: Patient[];
+  error: string | null;
+}
+const PatientInfo = ({ addEntry, patients, error }: PatientInfoProps) => {
   const { id } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [diagnosis, setDiagnosis] = useState<Diagnosis[]>([]);
+  const [formVisibility, setFormVisibility] = useState<boolean>(false);
   useEffect(() => {
     const fetchPatient = async () => {
       try {
@@ -22,7 +30,7 @@ const PatientInfo = () => {
       }
     };
     fetchPatient();
-  }, [id]);
+  }, [id, patients]);
 
   useEffect(() => {
     const fetchDiagnosis = async () => {
@@ -61,6 +69,10 @@ const PatientInfo = () => {
     }
   };
 
+  const closeForm = () => {
+    setFormVisibility(false);
+  };
+
   return (
     <>
       {patient && (
@@ -71,6 +83,15 @@ const PatientInfo = () => {
           </h2>
           <p>ssn: {patient.ssn}</p>
           <p>occupation: {patient.occupation}</p>
+          {error && <Alert severity="error">{error}</Alert>}
+          {formVisibility && (
+            <EntryForm
+              diagnosis={diagnosis}
+              closeForm={closeForm}
+              addEntry={addEntry}
+              id={patient.id}
+            />
+          )}
           <h3>entries</h3>
           {patient.entries &&
             patient.entries.map((e) => (
@@ -96,6 +117,7 @@ const PatientInfo = () => {
             ))}
         </>
       )}
+      <button onClick={() => setFormVisibility(true)}>add entry</button>
     </>
   );
 };

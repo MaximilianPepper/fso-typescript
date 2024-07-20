@@ -15,7 +15,7 @@ const parseName = (name: unknown): string => {
   return name;
 };
 const parseDescription = (name: unknown): string => {
-  if (!isString(name)) {
+  if (!isString(name) || !name) {
     throw new Error("Incorrect or missing description");
   }
   return name;
@@ -27,7 +27,7 @@ const parseCriteria = (name: unknown): string => {
   return name;
 };
 const parseSpecialist = (name: unknown): string => {
-  if (!isString(name)) {
+  if (!isString(name) || !name) {
     throw new Error("Incorrect or missing specialist");
   }
   return name;
@@ -175,13 +175,14 @@ export const checkNewEntry = (object: unknown): EntryWithoutId => {
             const healthCheckRating = parseHealthCheckRating(
               object.healthCheckRating
             );
-            return {
-              description,
-              date,
-              specialist,
-              type: "HealthCheck",
+            const newObject = {
+              description: parseDescription(object.description),
+              date: parseDate(object.date),
+              specialist: parseSpecialist(object.specialist),
+              type: object.type,
               healthCheckRating,
             };
+            return newObject;
           }
           break;
 

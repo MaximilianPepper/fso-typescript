@@ -18,3 +18,16 @@ Content-Type: application/json
         "endDate": "2019-08-28"
       }
     }
+
+###
+
+POST http://localhost:3001/api/d2773c6e-f723-11e9-8f0b-362b9e155667/entries
+Content-Type: application/json
+
+{
+      "description": "",
+      "date": "2024-07-11",
+      "specialist": "wot",
+      "type": "HealthCheck",
+      "healthCheckRating": 0,
+    }

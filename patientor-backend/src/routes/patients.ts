@@ -32,6 +32,7 @@ router.post("/:id/entries", (req, res) => {
     const newEntry = checkNewEntry(req.body);
     const updatedPatientEntry = patientService.addNewEntry(id, newEntry);
     res.json(updatedPatientEntry);
+    console.log(updatedPatientEntry); //debug
   } catch (error: unknown) {
     let errorMessage = "Something went wrong.";
     if (error instanceof Error) {

@@ -4,15 +4,16 @@ import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
 import { Button, Divider, Container, Typography } from "@mui/material";
 
 import { apiBaseUrl } from "./constants";
-import { Patient } from "./types";
+import { EntryWithoutId, Patient } from "./types";
 
 import patientService from "./services/patients";
 import PatientListPage from "./components/PatientListPage";
 import PatientInfo from "./components/PatientInfo";
+import { AxiosError } from "axios";
 
 const App = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
-
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     void axios.get<void>(`${apiBaseUrl}/ping`);
 
@@ -22,6 +23,37 @@ const App = () => {
     };
     void fetchPatientList();
   }, []);
+
+  const addEntry = async (id: string, entry: EntryWithoutId) => {
+    console.log("addEntry called with:", { id, entry });
+    try {
+      const patientEntry = await patientService.createEntry(id, entry);
+      console.log("API call result:", patientEntry);
+
+      setPatients((prevPatients) =>
+        prevPatients.map((p) => (p.id === patientEntry.id ? patientEntry : p))
+      );
+    } catch (error) {
+      if (isAxiosError(error)) {
+        if (error.response) {
+          const e = error.response.data;
+          if (typeof e === "string") {
+            setError(e);
+            setTimeout(() => setError(null), 5000);
+          } else {
+            console.log("error.response.data should be a string");
+          }
+        } else {
+          console.log(
+            "An Axios error occurred, but no response data is available"
+          );
+        }
+      } else {
+        console.log(error);
+        console.log("An unknown error occurred");
+      }
+    }
+  };
 
   return (
     <div className="App">
@@ -44,7 +76,16 @@ const App = () => {
                 />
               }
             />
-            <Route path="/:id" element={<PatientInfo />} />
+            <Route
+              path="/:id"
+              element={
+                <PatientInfo
+                  addEntry={addEntry}
+                  patients={patients}
+                  error={error}
+                />
+              }
+            />
           </Routes>
         </Container>
       </Router>
@@ -53,3 +94,7 @@ const App = () => {
 };
 
 export default App;
+
+function isAxiosError(error: unknown): error is AxiosError {
+  return (error as AxiosError).isAxiosError !== undefined;
+}
