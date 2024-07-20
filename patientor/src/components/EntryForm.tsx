@@ -7,13 +7,13 @@ import {
   Grid,
   Button,
   SelectChangeEvent,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
 } from "@mui/material";
 import { Diagnosis, EntryWithoutId, HealthCheckRating } from "../types";
 
-// u stopped here, uncomment and work on feature to have different type of form,
-//then add the front and backend logic to add form
-
-// type FormTypes = "Hospital" | "HealthCheck" | "OccupationalHealthcare";
+type FormTypes = "Hospital" | "HealthCheck" | "OccupationalHealthcare";
 interface EntryFormProps {
   diagnosis: Diagnosis[];
   closeForm(): void;
@@ -22,7 +22,7 @@ interface EntryFormProps {
 }
 
 const EntryForm = ({ diagnosis, closeForm, addEntry, id }: EntryFormProps) => {
-  //const [formType, setFormType] = useState<FormTypes>("Hospital");
+  const [formType, setFormType] = useState<FormTypes>("HealthCheck");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [specialist, setSPecialist] = useState("");
@@ -30,6 +30,10 @@ const EntryForm = ({ diagnosis, closeForm, addEntry, id }: EntryFormProps) => {
   const [rating, setRating] = useState<HealthCheckRating>(
     HealthCheckRating.Healthy
   );
+  const [criteria, setCriteria] = useState("");
+  const [employerName, setEmployerName] = useState("");
+  const [date1, setDate1] = useState("");
+  const [date2, setDate2] = useState("");
 
   const handleChange = (event: SelectChangeEvent<string | string[]>) => {
     const { value } = event.target;
@@ -43,22 +47,82 @@ const EntryForm = ({ diagnosis, closeForm, addEntry, id }: EntryFormProps) => {
   };
   const addNewEntry = (event: React.FormEvent) => {
     event.preventDefault();
+    if (formType === "HealthCheck") {
+      const newEntry: EntryWithoutId = {
+        description: description,
+        date: date,
+        specialist: specialist,
+        diagnosisCodes: diagnosisCodes,
+        type: "HealthCheck",
+        healthCheckRating: rating,
+      };
+      addEntry(id, newEntry);
+      setRating(HealthCheckRating.Healthy);
+    }
+    if (formType === "Hospital") {
+      const newEntry: EntryWithoutId = {
+        description: description,
+        date: date,
+        specialist: specialist,
+        diagnosisCodes: diagnosisCodes,
+        type: "Hospital",
+        discharge: { date: date, criteria: criteria },
+      };
+      addEntry(id, newEntry);
+      setCriteria("");
+    }
+    if (formType === "OccupationalHealthcare") {
+      const newEntry: EntryWithoutId = {
+        description: description,
+        date: date,
+        specialist: specialist,
+        diagnosisCodes: diagnosisCodes,
+        type: "OccupationalHealthcare",
+        employerName: employerName,
+      };
+      if (date1 && date2) {
+        newEntry.sickLeave = { startDate: date1, endDate: date2 };
+      }
+      addEntry(id, newEntry);
+      setEmployerName("");
+      setDate2("");
+      setDate1("");
+    }
 
-    const newEntry: EntryWithoutId = {
-      description: description,
-      date: date,
-      specialist: specialist,
-      diagnosisCodes: diagnosisCodes,
-      type: "HealthCheck",
-      healthCheckRating: rating,
-    };
-    console.log("here is newEntry", newEntry);
     // remember to cleanup state here
-
-    addEntry(id, newEntry);
+    setDescription("");
+    setDate("");
+    setSPecialist("");
+    setDiagnosisCodes([]);
   };
+  const handleFormTypeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFormType(event.target.value as FormTypes);
+    setCriteria("");
+    setDate1("");
+    setDate2("");
+    setRating(HealthCheckRating.Healthy);
+    setEmployerName("");
+  };
+
   return (
     <div>
+      <RadioGroup value={formType} onChange={handleFormTypeChange} row>
+        <FormControlLabel
+          value="Hospital"
+          control={<Radio />}
+          label="Hospital"
+        />
+        <FormControlLabel
+          value="HealthCheck"
+          control={<Radio />}
+          label="HealthCheck"
+        />
+        <FormControlLabel
+          value="OccupationalHealthcare"
+          control={<Radio />}
+          label="Occupational Healthcare"
+        />
+      </RadioGroup>
       <form onSubmit={addNewEntry}>
         <TextField
           label="Description"
@@ -96,22 +160,75 @@ const EntryForm = ({ diagnosis, closeForm, addEntry, id }: EntryFormProps) => {
           ))}
         </Select>
         {/*here i call for additional entry based on type*/}
-        <InputLabel style={{ marginTop: 20 }}>Diagnosis Codes:</InputLabel>
-        <InputLabel style={{ marginTop: 20 }}>Health Check Rating:</InputLabel>
-        <Select
-          label="Health Check Rating"
-          fullWidth
-          value={rating}
-          onChange={handleRatingChange}
-        >
-          {Object.values(HealthCheckRating)
-            .filter((value) => typeof value === "number")
-            .map((value) => (
-              <MenuItem key={value} value={value}>
-                {HealthCheckRating[value as number]}
-              </MenuItem>
-            ))}
-        </Select>
+        {formType === "HealthCheck" && (
+          <>
+            {" "}
+            <InputLabel style={{ marginTop: 20 }}>
+              Health Check Rating:
+            </InputLabel>
+            <Select
+              label="Health Check Rating"
+              fullWidth
+              value={rating}
+              onChange={handleRatingChange}
+            >
+              {Object.values(HealthCheckRating)
+                .filter((value) => typeof value === "number")
+                .map((value) => (
+                  <MenuItem key={value} value={value}>
+                    {HealthCheckRating[value as number]}
+                  </MenuItem>
+                ))}
+            </Select>
+          </>
+        )}
+        {formType === "Hospital" && (
+          <>
+            <InputLabel style={{ marginTop: 20 }}>Discharge:</InputLabel>
+            <TextField
+              label="Criteria"
+              fullWidth
+              value={criteria}
+              onChange={({ target }) => setCriteria(target.value)}
+            />
+            <TextField
+              label="discharge date"
+              fullWidth
+              value={date}
+              onChange={({ target }) => setDate(target.value)}
+              type="date"
+              InputLabelProps={{ shrink: true }}
+            />
+          </>
+        )}
+        {formType === "OccupationalHealthcare" && (
+          <>
+            <InputLabel style={{ marginTop: 20 }}>Discharge:</InputLabel>
+            <TextField
+              label="Employer Name"
+              fullWidth
+              value={employerName}
+              onChange={({ target }) => setEmployerName(target.value)}
+            />
+            <TextField
+              label="sick leave start date"
+              fullWidth
+              value={date1}
+              onChange={({ target }) => setDate1(target.value)}
+              type="date"
+              InputLabelProps={{ shrink: true }}
+            />
+            <TextField
+              label="sick leave end date"
+              fullWidth
+              value={date2}
+              onChange={({ target }) => setDate2(target.value)}
+              type="date"
+              InputLabelProps={{ shrink: true }}
+            />
+          </>
+        )}
+
         {/*this is the end of type exclusive fields*/}
         <Grid>
           <Grid item>
